@@ -31,6 +31,18 @@ android {
     // 沙箱程序只有 arm64 版本(jniLibs/arm64-v8a);APK 不限 ABI,别的设备照常安装、显示「此设备不支持沙箱」。
     // 沙箱程序要从 nativeLibraryDir 直接执行,安装时必须解到磁盘
     packaging { jniLibs { useLegacyPackaging = true } }
+    // Same key as the assistant app, on purpose: the door that lets the assistant hand Mika a sentence
+    // is guarded by a signature-level permission, so both APKs must be signed with this one keystore.
+    // (Builds signed with a per-machine debug key would install fine and silently refuse every handover.)
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("jarvis-debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
 
     // 发布用的包(perf、release)按架构再出一份:除了全架构包,另出只带 arm64-v8a 原生库的小包。
     // 两个包代码、资源、版本号、签名都一样,只差 lib/ 下的其他架构;各自是完整 APK,不是一起安装的拆分包。
