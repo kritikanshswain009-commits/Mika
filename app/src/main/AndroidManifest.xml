@@ -3,6 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- The door Kami knocks on. Signature-level, so only an app built with this app's own key can
+         hand Mika a sentence; nothing else on the phone can drive the agent. -->
+    <permission
+        android:name="com.wangzan101.mika.permission.KAMI_COMMAND"
+        android:protectionLevel="signature" />
     <!-- Opt-in, task-scoped incoming SMS only; never request READ_SMS or the default SMS role. -->
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <!-- 按住说话时录音，转成文字；用户浏览器里的网页要麦克风时也用它。 -->
@@ -261,6 +267,18 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Runs a user-requested phone task on the app's own virtual display and shows its progress; afterwards keeps the one web page the user asked to keep open running, for at most two hours" />
         </service>
+
+        <!-- The assistant app (Kami) holds the power-button slot; this is how it hands a spoken sentence
+             to Mika's task service instead of trying to act itself. Guarded by the signature permission
+             above, so no other app on the phone can use it. -->
+        <receiver
+            android:name=".task.CommandDoor"
+            android:exported="true"
+            android:permission="com.wangzan101.mika.permission.KAMI_COMMAND">
+            <intent-filter>
+                <action android:name="com.wangzan101.mika.KAMI_COMMAND" />
+            </intent-filter>
+        </receiver>
 
         <!-- 通话:Telecom 绑定伴侣 InCallService,系统电话仍用自己的通话界面;前台服务在锁屏时撑住进程。 -->
         <service
